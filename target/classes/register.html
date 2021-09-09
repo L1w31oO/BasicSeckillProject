@@ -1,0 +1,150 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link href="static/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="static/css/components.css" rel="stylesheet" type="text/css"/>
+    <link href="static/css/login.css" rel="stylesheet" type="text/css"/>
+    <script src="static/js/jquery-1.11.1.min.js" type="text/javascript"></script>
+</head>
+
+    <body class="login">
+        <div class="content">
+            <h3 class="form-title">用户注册</h3>
+            <div class="form-group">
+                <label class="control-label">手机号</label>
+                <div>
+                    <input class="form-control" type="text" placeholder="手机号" name="telephone" id="telephone"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">验证码</label>
+                <div>
+                    <input class="form-control" type="text" placeholder="验证码" name="otpCode" id="otpCode"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">用户昵称</label>
+                <div>
+                    <input class="form-control" type="text" placeholder="用户昵称" name="name" id="name"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">性别</label>
+                <div>
+                    <input class="form-control" type="text" placeholder="性别" name="gender" id="gender"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">年龄</label>
+                <div>
+                    <input class="form-control" type="text" placeholder="年龄" name="age" id="age"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">密码</label>
+                <div>
+                    <input class="form-control" type="password" placeholder="密码" name="password" id="password"/>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn blue-steel" id="register" type="submit">
+                    提交注册
+                </button>
+            </div>
+        </div>
+    </body>
+
+    <script>
+        jQuery(document).ready(function () {
+            function getParam(paramName) {
+                paramValue = "", isFound = !1;
+                if (this.location.search.indexOf("?") == 0 && this.location.search.indexOf("=") > 1) {
+                    arrSource = unescape(this.location.search).substring(1, this.location.search.length).split("&"), i = 0;
+                    while (i < arrSource.length && !isFound) arrSource[i].indexOf("=") > 0 && arrSource[i].split("=")[0].toLowerCase() == paramName.toLowerCase() && (paramValue = arrSource[i].split("=")[1], isFound = !0), i++
+                }
+                return paramValue == "" && (paramValue = null), paramValue
+            }
+            var telephone = getParam("telephone")
+            $("#telephone").attr("value",telephone);
+            $("#telephone").attr("disabled", true)
+            $("#register").on("click", function () {
+                //为什么后端做了校验, 前端还要做呢? 因为校验要在最贴近用户感知的地方, 而不用从后端绕一圈, 感知更强体验更好
+                var telephone = $("#telephone").val();
+                var otpCode = $("#otpCode").val();
+                var name = $("#name").val();
+                var gender = $("#gender").val();
+                var age = $("#age").val();
+                var password = $("#password").val();
+                if (telephone == null || telephone === "") {
+                    alert("手机号不能为空");
+                    return false;
+                }
+                if (otpCode == null || otpCode === "") {
+                    alert("验证码不能为空");
+                    return false;
+                }
+                if (name == null || name === "") {
+                    alert("姓名不能为空");
+                    return false;
+                }
+                if (gender == null || gender === "") {
+                    alert("性别不能为空");
+                    return false;
+                }
+                if (age == null || age === "") {
+                    alert("年龄不能为空");
+                    return false;
+                }
+                if (password == null || password === "") {
+                    alert("密码不能为空");
+                    return false;
+                }
+                /**
+                 imooc 慕课网 SpringBoot构建电商基础秒杀项目
+                 3-11 解bug总结 ①inSessionOtpCode==null ②注册失败user_id 为空 ③注册失败 404
+                 1 inSessionOtpCode 一直是 null  (我是漏了register.html)
+
+                 解决方案: ① 前端 register.html 和 getotp.html 都添加 xhrFields:{withCredentials:true}, ② 后端 UserController添加 @CrossOrigin(allowCredentials = "true", allowedHeaders = "*")
+
+                 记得 重启程序, 还不行可 FIle -> invalidate Cache/ Restart
+
+                 2 注册失败1: user_id 为空,
+
+                 解决方案: 看视频可知, <insert id=insertSelect 里添加: keyProperty="id" useGeneratedKeys="true" 实现id回填再 --> UserServiceImpl.register()中 合适位置 添加 userModel.setId(userDO.getId());
+
+                 重启程序
+
+                 3 注册失败2: `注册失败, 原因为........`  总之是404, 是register() 忘了添加     @ResponseBody
+                 */
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/x-www-form-urlencoded",
+                    url: "http://localhost:8090/user/register",  // 部署时需要修改
+                    data: {
+                        "telephone": telephone,
+                        "otpCode": otpCode,
+                        "name": name,
+                        "gender": gender,
+                        "age": age,
+                        "password": password,
+                    },
+                    //xhrFields 允许ajax跨域请求 授信, 与后端 ALLOW_CREDENTIALS, 遥相呼应
+                    xhrFields:{withCredentials:true},
+                    success: function (data) {
+                        if (data.status === "Success") {
+                            alert("注册成功");
+                            // window.location.href = "listitem.html";
+                            window.location.href = "login.html";
+                        } else {
+                            alert("注册未成功, 原因为" + data.data.errMsg);
+                        }
+                    },
+                    error: function (data) {
+                        alert("注册失败, 原因为" + data.responseText);
+                    }
+                });
+                return false;
+            })
+        });
+    </script>
+</html>
