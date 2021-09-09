@@ -1,0 +1,2 @@
+# BasicSeckillProject
+BasicSeckillProject是一款互联网商城基础秒杀项目。使用SpringBoot和Mybatis实现了电商秒杀系统的基本流程，包括基础电商项目中用户管理、商品管理、交易管理及秒杀活动管理的全套秒杀应用开发。其中，用户注册实现了OTP验证，项目的接口抽象良好，模块耦合度低。
